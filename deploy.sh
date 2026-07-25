@@ -17,10 +17,16 @@ if command -v bun &> /dev/null; then
   bun run build
 fi
 
+# Ensure Docker starts automatically on system reboots
+if command -v systemctl &> /dev/null; then
+  sudo systemctl enable docker || true
+fi
+
 # Deploy with Docker Compose
 echo "🐳 Launching Docker container..."
 docker compose down || true
 docker compose up -d --build
 
 echo "✅ Intergram is live and running!"
+echo "🔄 Auto-restart on server reboot is active (restart: unless-stopped)."
 docker compose ps
