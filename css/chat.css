@@ -1,9 +1,19 @@
-/* An adaptation of this https://codepen.io/Varo/pen/gbZzgr */
+/* Intergram Pixel-Perfect Modern Chat Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+* {
+    box-sizing: border-box;
+}
 
 html, body {
-    background: #e5e5e5;
-    font-family: 'Lato', sans-serif;
+    background: #f8fafc;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     margin: 0 auto;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* M E S S A G E S */
@@ -11,114 +21,107 @@ html, body {
 .chat {
     list-style: none;
     background: none;
-    padding: 0 0 60px 0;
-    margin: 0 0 10px;
+    padding: 16px 14px 70px 14px;
+    margin: 0;
+    height: calc(100vh - 54px);
+    overflow-y: auto;
+    scroll-behavior: smooth;
 }
 
 .chat li {
-    padding: 8px;
-    padding: 0.5rem;
-    font-size: 14.4px;
-    font-size: 0.9rem;
-    overflow: hidden;
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
+    padding: 4px 0;
+    margin-bottom: 8px;
     display: flex;
+    animation: fadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .visitor {
-    -webkit-box-pack: end;
-    -webkit-justify-content: flex-end;
-        -ms-flex-pack: end;
-            justify-content: flex-end;
-    -webkit-box-align: end;
-    -webkit-align-items: flex-end;
-        -ms-flex-align: end;
-                -ms-grid-row-align: flex-end;
-            align-items: flex-end;
+    justify-content: flex-end;
+    align-items: flex-end;
 }
 
 .visitor .msg {
-    -webkit-box-ordinal-group: 2;
-    -webkit-order: 1;
-        -ms-flex-order: 1;
-            order: 1;
-    border-bottom-right-radius: 0;
-    box-shadow: 1px 2px 0 #D4D4D4;
+    order: 1;
+    background: linear-gradient(135deg, #1f8ceb 0%, #1677d2 100%);
+    color: #ffffff;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 4px 14px rgba(31, 140, 235, 0.22);
+}
+
+.admin {
+    justify-content: flex-start;
+    align-items: flex-end;
 }
 
 .admin .msg {
-    -webkit-box-ordinal-group: 2;
-    -webkit-order: 1;
-        -ms-flex-order: 1;
-            order: 1;
-    border-top-left-radius: 0;
-    box-shadow: -1px 2px 0 #D4D4D4;
+    order: 1;
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px 18px 18px 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .msg {
     word-wrap: break-word;
-    background: white;
-    min-width: 50px;
-    max-width: 80%;
-    padding: 10px;
-    border-radius: 2px;
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.07);
+    min-width: 60px;
+    max-width: 82%;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.45;
+    font-weight: 400;
 }
 
 .msg p {
-    margin: 0 0 3.2px 0;
-    margin: 0 0 0.2rem 0;
+    margin: 0;
 }
 
 .msg .time {
-    font-size: 11.2px;
-    font-size: 0.7rem;
-    color: #ccc;
-    margin-top: 3px;
+    font-size: 10.5px;
+    color: #94a3b8;
+    margin-top: 4px;
     float: right;
     cursor: default;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    user-select: none;
+    opacity: 0.85;
 }
 
+.visitor .msg .time {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* S C R O L L B A R */
+
 ::-webkit-scrollbar {
-    min-width: 12px;
-    width: 12px;
-    max-width: 12px;
-    min-height: 12px;
-    height: 12px;
-    max-height: 12px;
-    background: #e5e5e5;
-    box-shadow: inset 0 -14px 0 #e5e5e5, inset 0 -46px 0 #fafafa;
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #bbb;
-    border-radius: 100px;
-    border: solid 3px #e5e5e5;
-    box-shadow: inset 0 0 3px #999;
+    background: #cbd5e1;
+    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #b0b0b0;
-    box-shadow: inset 0 0 3px #888;
+    background: #94a3b8;
 }
 
-::-webkit-scrollbar-thumb:active {
-    background: #aaa;
-    box-shadow: inset 0 0 3px #7f7f7f;
-}
-
-::-webkit-scrollbar-button {
-    display: block;
-    height: 24px;
-}
-
-/* I N P U T */
+/* I N P U T   F I E L D */
 
 input.textarea {
     position: fixed;
@@ -126,17 +129,28 @@ input.textarea {
     left: 0;
     right: 0;
     width: 100%;
-    height: 42px;
+    height: 54px;
     z-index: 99;
     background: #ffffff;
     border: none;
-    border-top: 1px solid #d4d4d4;
+    border-top: 1px solid #e2e8f0;
     outline: none;
-    padding-left: 15px;
-    padding-right: 15px;
-    color: #333;
+    padding: 0 18px;
+    color: #0f172a;
+    font-size: 14px;
+    font-family: inherit;
     font-weight: 400;
+    transition: all 0.2s ease;
     box-sizing: border-box;
+}
+
+input.textarea:focus {
+    background: #ffffff;
+    border-top-color: #1f8ceb;
+}
+
+input.textarea::placeholder {
+    color: #94a3b8;
 }
 
 a.banner {
