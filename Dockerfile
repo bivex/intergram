@@ -1,13 +1,13 @@
 # ── Stage 1: Build ──
-FROM oven/bun:1.1-alpine AS builder
+FROM oven/bun:alpine AS builder
 
 WORKDIR /app
 
 # Copy dependency manifests & lockfile
 COPY package.json bun.lock ./
 
-# Install all dependencies (including devDependencies for build)
-RUN bun install --frozen-lockfile
+# Install dependencies for build
+RUN bun install
 
 # Copy source code and config files
 COPY . .
@@ -16,7 +16,7 @@ COPY . .
 RUN bun run build
 
 # ── Stage 2: Production Runtime ──
-FROM oven/bun:1.1-alpine AS runner
+FROM oven/bun:alpine AS runner
 
 WORKDIR /app
 
@@ -27,10 +27,11 @@ ENV PORT=3000
 COPY package.json bun.lock ./
 
 # Install production dependencies only
-RUN bun install --frozen-lockfile --production
+RUN bun install --production
 
 # Copy built dist files and server code
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/src ./src
 COPY server.js ./
 
 EXPOSE 3000
