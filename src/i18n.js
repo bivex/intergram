@@ -49,8 +49,33 @@ export const translations = {
 export function getI18nConfiguration(customizations = {}) {
   const lang = customizations.lang || 'en';
   const pack = translations[lang] || translations.en;
-  return {
-    ...pack,
-    ...customizations
-  };
+
+  const merged = { ...customizations };
+  
+  // Apply language pack values for i18n keys
+  for (const key of Object.keys(pack)) {
+    if (lang !== 'en') {
+      // Override if key is missing or is the default English fallback string
+      if (!customizations[key] || isEnglishDefault(key, customizations[key])) {
+        merged[key] = pack[key];
+      }
+    } else if (!merged[key]) {
+      merged[key] = pack[key];
+    }
+  }
+
+  return merged;
+}
+
+function isEnglishDefault(key, val) {
+  if (typeof val !== 'string') return false;
+  const enVal = translations.en[key];
+  if (!enVal) return false;
+  return val === enVal || 
+         val.startsWith('Hello!') || 
+         val.startsWith('Click to') || 
+         val.startsWith("Let's") || 
+         val.startsWith('Looking for') || 
+         val.startsWith('It seems') || 
+         val.startsWith('Send a message');
 }
