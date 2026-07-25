@@ -5,8 +5,8 @@ module.exports = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   devtool: 'source-map',
   entry: {
-    widget: path.join(__dirname, 'src', 'widget', 'widget-index.js'),
-    chat: path.join(__dirname, 'src', 'chat', 'chat-index.js'),
+    widget: path.join(__dirname, 'src', 'widget', 'widget-index.jsx'),
+    chat: path.join(__dirname, 'src', 'chat', 'chat-index.jsx'),
   },
   output: {
     path: path.join(__dirname, 'dist', 'js'),
@@ -16,7 +16,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.jsx?$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader'
@@ -29,6 +29,7 @@ module.exports = {
     ]
   },
   resolve: {
+    extensions: ['.js', '.jsx'],
     alias: {
       react: 'preact/compat',
       'react-dom': 'preact/compat'
