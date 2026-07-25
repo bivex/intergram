@@ -1,19 +1,29 @@
-const request = require('request');
-const compression = require('compression');
-const cors = require('cors');
 const express = require('express');
-const bodyParser = require('body-parser');
+const cors = require('cors');
+const compression = require('compression');
+const axios = require('axios');
+
 const app = express();
 const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const io = require('socket.io')(http, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
-app.use(express.static('dist', {index: 'demo.html', maxage: '4h'}));
-app.use(bodyParser.json());
+app.use(compression());
+app.use(express.static('dist', {index: 'demo.html', maxAge: '4h'}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // handle admin Telegram messages
 app.post('/hook', function(req, res){
     try {
         const message = req.body.message || req.body.channel_post;
+        if (!message || !message.chat) {
+            return res.status(200).end();
+        }
         const chatId = message.chat.id;
         const name = message.chat.first_name || message.chat.title || "admin";
         const text = message.text || "";
@@ -49,7 +59,7 @@ io.on('connection', function(socket){
         let chatId = registerMsg.chatId;
         let messageReceived = false;
         socket.join(userId);
-        console.log("useId " + userId + " connected to chatId " + chatId);
+        console.log("userId " + userId + " connected to chatId " + chatId);
 
         socket.on('message', function(msg) {
             messageReceived = true;
@@ -67,14 +77,20 @@ io.on('connection', function(socket){
 
 });
 
-function sendTelegramMessage(chatId, text, parseMode) {
-    request
-        .post('https://api.telegram.org/bot' + process.env.TELEGRAM_TOKEN + '/sendMessage')
-        .form({
-            "chat_id": chatId,
-            "text": text,
-            "parse_mode": parseMode
+async function sendTelegramMessage(chatId, text, parseMode) {
+    if (!process.env.TELEGRAM_TOKEN) {
+        console.error("TELEGRAM_TOKEN is not set");
+        return;
+    }
+    try {
+        await axios.post('https://api.telegram.org/bot' + process.env.TELEGRAM_TOKEN + '/sendMessage', {
+            chat_id: chatId,
+            text: text,
+            parse_mode: parseMode
         });
+    } catch (err) {
+        console.error("Telegram send error:", err.response ? err.response.data : err.message);
+    }
 }
 
 app.post('/usage-start', cors(), function(req, res) {
@@ -83,16 +99,16 @@ app.post('/usage-start', cors(), function(req, res) {
     res.end();
 });
 
-// left here until the cache expires
 app.post('/usage-end', cors(), function(req, res) {
     res.statusCode = 200;
     res.end();
 });
 
-http.listen(process.env.PORT || 3000, function(){
-    console.log('listening on port:' + (process.env.PORT || 3000));
-});
-
 app.get("/.well-known/acme-challenge/:content", (req, res) => {
     res.send(process.env.CERTBOT_RESPONSE);
+});
+
+const PORT = process.env.PORT || 3000;
+http.listen(PORT, function(){
+    console.log('listening on port:' + PORT);
 });
