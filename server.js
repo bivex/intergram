@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const http = require('http');
+const axios = require('axios');
 
 const app = express();
 const server = http.createServer(app);
@@ -79,7 +80,18 @@ app.get("/.well-known/acme-challenge/:content", (req, res) => {
 });
 
 const requestedPort = process.env.RANDOM_PORT === 'true' || process.env.PORT === '0' ? 0 : (process.env.PORT || 3000);
-server.listen(requestedPort, () => {
+server.listen(requestedPort, async () => {
     const actualPort = server.address().port;
-    console.log(`[Hexagonal Server] Listening on port: ${actualPort}${requestedPort === 0 ? ' (randomly assigned)' : ''}`);
+    console.log(`[Hexagonal Server] Listening on port: ${actualPort}`);
+
+    const token = process.env.TELEGRAM_TOKEN;
+    const webhookUrl = process.env.WEBHOOK_URL;
+    if (token && webhookUrl) {
+        try {
+            await axios.get(`https://api.telegram.org/bot${token}/setWebhook?url=${webhookUrl}`);
+            console.log(`[Telegram Bot] Webhook successfully registered for ${webhookUrl}`);
+        } catch (e) {
+            console.error(`[Telegram Bot] Webhook registration failed:`, e.message);
+        }
+    }
 });
