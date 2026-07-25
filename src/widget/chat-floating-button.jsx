@@ -6,6 +6,8 @@ export default class ChatFloatingButton extends Component {
     render({color, onClick},{}) {
         return (
             <div
+                role="button"
+                aria-label="Toggle chat"
                 style={{background: color, ...mobileTitleStyle}}
                 onClick={onClick}>
 
