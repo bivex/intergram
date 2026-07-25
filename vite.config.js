@@ -2,7 +2,22 @@ import { defineConfig } from 'vite';
 import preact from '@preact/preset-vite';
 
 export default defineConfig({
-  plugins: [preact()],
+  plugins: [
+    {
+      name: 'dev-rewrite-compiled-js',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url.startsWith('/js/chat.js')) {
+            req.url = '/src/chat/chat-index.jsx';
+          } else if (req.url.startsWith('/js/widget.js')) {
+            req.url = '/src/widget/widget-index.jsx';
+          }
+          next();
+        });
+      }
+    },
+    preact()
+  ],
   server: {
     port: 5173,
     proxy: {
