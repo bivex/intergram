@@ -13,7 +13,13 @@ const io = require('socket.io')(http, {
 });
 
 app.use(compression());
-app.use(express.static('dist', {index: 'demo.html', maxAge: '4h'}));
+app.use(express.static('dist', {
+    index: 'demo.html',
+    maxAge: 0,
+    setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
