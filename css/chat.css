@@ -88,17 +88,16 @@ html, body {
 }
 
 .msg .time {
-    font-size: 10.5px;
-    color: #94a3b8;
+    font-size: 11px;
+    color: #64748b;
     margin-top: 4px;
     float: right;
     cursor: default;
     user-select: none;
-    opacity: 0.85;
 }
 
 .visitor .msg .time {
-    color: rgba(255, 255, 255, 0.75);
+    color: #e2e8f0;
 }
 
 /* S C R O L L B A R */

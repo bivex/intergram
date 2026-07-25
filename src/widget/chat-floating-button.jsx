@@ -7,8 +7,10 @@ export default class ChatFloatingButton extends Component {
         return (
             <div
                 role="button"
+                tabIndex={0}
                 aria-label="Toggle chat"
                 style={{background: color, ...mobileTitleStyle}}
+                onKeyPress={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
                 onClick={onClick}>
 
                 <svg style={{paddingTop: 4}}
