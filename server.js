@@ -1,16 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
-const axios = require('axios');
+const http = require('http');
 
 const app = express();
-const http = require('http').Server(app);
-const io = require('socket.io')(http, {
+const server = http.createServer(app);
+const io = require('socket.io')(server, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
     }
 });
+
+// Import Hexagonal DI Container
+const { createContainer } = require('./src/infrastructure/config/container');
+const container = createContainer(io);
 
 app.use(compression());
 app.use(express.static('dist', {
@@ -23,91 +27,51 @@ app.use(express.static('dist', {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// handle admin Telegram messages
-app.post('/hook', function(req, res){
+// Primary HTTP Adapter: Telegram Webhook Route
+app.post('/hook', async (req, res) => {
     try {
-        const message = req.body.message || req.body.channel_post;
-        if (!message || !message.chat) {
-            return res.status(200).end();
-        }
-        const chatId = message.chat.id;
-        const name = message.chat.first_name || message.chat.title || "admin";
-        const text = message.text || "";
-        const reply = message.reply_to_message;
-
-        if (text.startsWith("/start")) {
-            console.log("/start chatId " + chatId);
-            sendTelegramMessage(chatId,
-                "*Welcome to Intergram* \n" +
-                "Your unique chat id is `" + chatId + "`\n" +
-                "Use it to link between the embedded chat and this telegram chat",
-                "Markdown");
-        } else if (reply) {
-            let replyText = reply.text || "";
-            let userId = replyText.split(':')[0];
-            io.to(userId).emit(chatId + "-" + userId, {name, text, from: 'admin'});
-        } else if (text){
-            io.emit(chatId, {name, text, from: 'admin'});
-        }
-
+        await container.processAdminReplyUseCase.execute({ telegramUpdate: req.body });
     } catch (e) {
-        console.error("hook error", e, req.body);
+        console.error("[HTTP Adapter] Hook processing error:", e);
     }
-    res.statusCode = 200;
-    res.end();
+    res.status(200).end();
 });
 
-// handle chat visitors websocket messages
-io.on('connection', function(socket){
-
-    socket.on('register', function(registerMsg){
-        let userId = registerMsg.userId;
-        let chatId = registerMsg.chatId;
+// Primary WebSocket Adapter: Chat Visitor Events
+io.on('connection', (socket) => {
+    socket.on('register', (registerMsg) => {
+        const userId = registerMsg.userId;
+        const chatId = registerMsg.chatId;
         let messageReceived = false;
-        socket.join(userId);
-        console.log("userId " + userId + " connected to chatId " + chatId);
 
-        socket.on('message', function(msg) {
+        socket.join(userId);
+        console.log(`[SocketAdapter] User ${userId} registered on chat ${chatId}`);
+
+        socket.on('message', async (msg) => {
             messageReceived = true;
-            io.to(userId).emit(chatId + "-" + userId, msg);
-            let visitorName = msg.visitorName ? "[" + msg.visitorName + "]: " : "";
-            sendTelegramMessage(chatId, userId + ":" + visitorName + " " + msg.text);
+            await container.sendVisitorMessageUseCase.execute({
+                chatId,
+                userId,
+                text: msg.text,
+                visitorName: msg.visitorName
+            });
         });
 
-        socket.on('disconnect', function(){
-            if (messageReceived) {
-                sendTelegramMessage(chatId, userId + " has left");
+        socket.on('disconnect', () => {
+            if (messageReceived && container.telegramAdapter) {
+                container.telegramAdapter.sendMessage(chatId, `${userId} has left`);
             }
         });
     });
-
 });
 
-async function sendTelegramMessage(chatId, text, parseMode) {
-    if (!process.env.TELEGRAM_TOKEN) {
-        console.error("TELEGRAM_TOKEN is not set");
-        return;
-    }
-    try {
-        await axios.post('https://api.telegram.org/bot' + process.env.TELEGRAM_TOKEN + '/sendMessage', {
-            chat_id: chatId,
-            text: text,
-            parse_mode: parseMode
-        });
-    } catch (err) {
-        console.error("Telegram send error:", err.response ? err.response.data : err.message);
-    }
-}
-
-app.post('/usage-start', cors(), function(req, res) {
-    console.log('usage from', req.query.host);
-    res.statusCode = 200;
-    res.end();
+app.post('/usage-start', cors(), (req, res) => {
+    console.log('[HTTP Adapter] Usage start from:', req.query.host);
+    res.status(200).end();
 });
 
-app.post('/usage-end', cors(), function(req, res) {
-    res.statusCode = 200;
-    res.end();
+app.post('/usage-end', cors(), (req, res) => {
+    res.status(200).end();
 });
 
 app.get("/.well-known/acme-challenge/:content", (req, res) => {
@@ -115,7 +79,7 @@ app.get("/.well-known/acme-challenge/:content", (req, res) => {
 });
 
 const requestedPort = process.env.RANDOM_PORT === 'true' || process.env.PORT === '0' ? 0 : (process.env.PORT || 3000);
-http.listen(requestedPort, function(){
-    const actualPort = http.address().port;
-    console.log('listening on port: ' + actualPort + (requestedPort === 0 ? ' (randomly assigned)' : ''));
+server.listen(requestedPort, () => {
+    const actualPort = server.address().port;
+    console.log(`[Hexagonal Server] Listening on port: ${actualPort}${requestedPort === 0 ? ' (randomly assigned)' : ''}`);
 });
