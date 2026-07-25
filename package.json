@@ -4,9 +4,9 @@
   "description": "A live chat widget linked to your telegram messenger",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "bun server.js",
     "build": "shx mkdir -p dist && shx cp *.html dist && shx cp -r ./media dist && shx cp -r ./css dist && webpack --mode production",
-    "dev": "node devServer.js",
+    "dev": "bun server.js",
     "lint": "eslint src"
   },
   "authors": [
