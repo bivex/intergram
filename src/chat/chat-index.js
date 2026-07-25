@@ -1,6 +1,7 @@
 import { h, render } from 'preact';
 import Chat from './chat';
-import * as store from 'store'
+import * as store from 'store';
+import { getI18nConfiguration } from '../i18n';
 
 let conf = {};
 const confString = getUrlParameter('conf');
@@ -11,6 +12,7 @@ if (confString) {
         console.log('Failed to parse conf', confString, e);
     }
 }
+conf = getI18nConfiguration(conf);
 
 render(
     <Chat
