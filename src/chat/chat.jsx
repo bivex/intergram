@@ -1,5 +1,5 @@
-import * as store from 'store'
-import io from 'socket.io-client'
+import store from 'store';
+import io from 'socket.io-client';
 
 import { h, Component } from 'preact';
 import MessageArea from './message-area';

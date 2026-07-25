@@ -1,6 +1,6 @@
 import { h, render } from 'preact';
 import Chat from './chat';
-import * as store from 'store';
+import store from 'store';
 import { getI18nConfiguration } from '../i18n';
 
 let conf = {};
@@ -31,10 +31,15 @@ function getUrlParameter(name) {
     return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
 
-function getUserId () {
-    if (store.enabled) {
-        return store.get('userId') || store.set('userId', generateRandomId());
-    } else {
+function getUserId() {
+    try {
+        let userId = store.get('userId');
+        if (!userId) {
+            userId = generateRandomId();
+            store.set('userId', userId);
+        }
+        return userId;
+    } catch (e) {
         return generateRandomId();
     }
 }
