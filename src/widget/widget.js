@@ -15,9 +15,11 @@ export default class Widget extends Component {
 
     constructor() {
         super();
-        this.state.isChatOpen = false;
-        this.state.pristine = true;
-        this.state.wasChatOpened = this.wasChatOpened();
+        this.state = {
+            isChatOpen: false,
+            pristine: true,
+            wasChatOpened: this.wasChatOpened()
+        };
     }
 
     render({conf, isMobile}, {isChatOpen, pristine}) {

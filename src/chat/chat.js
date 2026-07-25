@@ -11,12 +11,23 @@ export default class Chat extends Component {
 
     constructor(props) {
         super(props);
+        let messages = [];
         if (store.enabled) {
             this.messagesKey = 'messages' + '.' + props.chatId + '.' + props.host;
-            this.state.messages = store.get(this.messagesKey) || store.set(this.messagesKey, []);
-        } else {
-            this.state.messages = [];
+            try {
+                const stored = store.get(this.messagesKey);
+                if (Array.isArray(stored)) {
+                    messages = stored;
+                } else {
+                    store.set(this.messagesKey, []);
+                }
+            } catch (e) {
+                console.error('Failed to load messages from store', e);
+            }
         }
+        this.state = {
+            messages: messages
+        };
     }
 
     componentDidMount() {
@@ -89,18 +100,16 @@ export default class Chat extends Component {
 
     writeToMessages = (msg) => {
         msg.time = new Date();
+        const updatedMessages = [...(this.state.messages || []), msg];
         this.setState({
-            message: this.state.messages.push(msg)
+            messages: updatedMessages
         });
 
-        if (store.enabled) {
+        if (store.enabled && this.messagesKey) {
             try {
-                store.transact(this.messagesKey, function (messages) {
-                    messages.push(msg);
-                });
+                store.set(this.messagesKey, updatedMessages);
             } catch (e) {
                 console.log('failed to add new message to local storage', e);
-                store.set(this.messagesKey, [])
             }
         }
     }
