@@ -108,7 +108,8 @@ app.get("/.well-known/acme-challenge/:content", (req, res) => {
     res.send(process.env.CERTBOT_RESPONSE);
 });
 
-const PORT = process.env.PORT || 3000;
-http.listen(PORT, function(){
-    console.log('listening on port:' + PORT);
+const requestedPort = process.env.RANDOM_PORT === 'true' || process.env.PORT === '0' ? 0 : (process.env.PORT || 3000);
+http.listen(requestedPort, function(){
+    const actualPort = http.address().port;
+    console.log('listening on port: ' + actualPort + (requestedPort === 0 ? ' (randomly assigned)' : ''));
 });
