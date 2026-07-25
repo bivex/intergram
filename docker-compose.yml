@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  intergram:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: intergram
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN:-your_bot_token_here}
